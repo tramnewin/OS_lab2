@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 using namespace std;
+
 struct processInfo {
     int pid;
     int arrivalTime;
@@ -49,9 +50,17 @@ vector<processInfo> setInput(string filename){
     inputfile.close();
     return info;
 }
+
+void FCFS(vector<processInfo> info){
+    int serviceTime[info.size()];
+    serviceTime[0] = info[0].arrivalTime;
+
+
+}
 int main() {
 
     string filename;
+    string algo;
     vector<processInfo> result;
     cout<<"Enter file name: ";
     cin>> filename;
@@ -61,7 +70,16 @@ int main() {
         cout << result[i].arrivalTime <<"\t";
         cout << result[i].burstTime << endl;
     }
+    cout<< "Enter scheduling algorithm";
+    cin>> algo;
+    if(algo == "FCFS"){
+        FCFS(result);
+    } else if(algo == "SRTF"){
 
+    }else if(algo == "RR"){
+
+
+    }
 
     return 0;
 }

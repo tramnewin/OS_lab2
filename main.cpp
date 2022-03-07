@@ -10,29 +10,41 @@ struct processInfo {
 
 
 };
-vector<string> setInput(string filename){
+vector<processInfo> setInput(string filename){
     ifstream inputfile;
     stringstream ss;
     string substring;
     string anotherstring;
     string temp;
-    vector<string> info;
+    vector<processInfo> info;
+    processInfo tempo;
     int count =0;
     inputfile.open(filename);
     if (!inputfile.is_open()) {
         cout << "Unable to read file";
     }
     ss << inputfile.rdbuf();
-    while (getline(ss, anotherstring)) {
-        substring = anotherstring;
-        stringstream iss(substring);
-        getline(iss, temp, ' ');
-        count = 0;
-        while (count<3) {
-            info.push_back(temp);
-            getline(iss, temp, ' ');
-            ++count;
-        }
+    while (getline(ss, anotherstring)) {        //1 0 10 -> anotherString
+        substring = anotherstring;                    //replicate of another string
+        stringstream iss(substring);               //get string into iss which is string stream
+        getline(iss, temp, ' ');          //parse with delimiter temp has 1 in string datatype
+        stringstream convertStoI(temp);      //convert string to int store it into val
+        int val = 0;
+        convertStoI>> val;
+        tempo.pid = val;
+        convertStoI.str("");
+        convertStoI.clear();
+        getline(iss, temp, ' ');          //parse with delimiter temp has 0 in string datatype
+        convertStoI << temp;
+        convertStoI >> val;
+        tempo.arrivalTime = val;
+        convertStoI.clear();
+        getline(iss, temp, ' ');          //parse with delimiter temp has 0 in string datatype
+        convertStoI << temp;
+        convertStoI >> val;
+        tempo.burstTime = val;
+        info.push_back(tempo);
+
     }
     inputfile.close();
     return info;
@@ -40,11 +52,16 @@ vector<string> setInput(string filename){
 int main() {
 
     string filename;
-    vector<string> result;
+    vector<processInfo> result;
     cout<<"Enter file name: ";
     cin>> filename;
     result = setInput(filename);
-    for (int i = 0; i < result.size(); i++)
-        cout << result[i] <<endl;
+    for (int i = 0; i < result.size(); i++){
+        cout << result[i].pid <<"\t";
+        cout << result[i].arrivalTime <<"\t";
+        cout << result[i].burstTime << endl;
+    }
+
+
     return 0;
 }

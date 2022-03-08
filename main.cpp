@@ -54,7 +54,7 @@ vector<processInfo> setInput(string filename){
 void FCFS(vector<processInfo> info){
     int serviceTime[info.size()];
     serviceTime[0] = info[0].arrivalTime;
-
+    cout<<endl;
 
 }
 int main() {

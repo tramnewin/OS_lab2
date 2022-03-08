@@ -54,6 +54,7 @@ vector<processInfo> setInput(string filename){
     inputfile.open(filename);
     if (!inputfile.is_open()) {
         cout << "Unable to read file";
+        exit;
     }
     ss << inputfile.rdbuf();
     while (getline(ss, anotherstring)) {        //1 0 10 -> anotherString
@@ -128,9 +129,11 @@ void SRTF(vector<processInfo> info){
     int shortestP = 0, finishTime;
     bool flag = false;
     int waitTime[info.size()], turnaroundTime[info.size()], finishtime[info.size()];
+    for (int i = 0; i < info.size(); i++)
+        returnTime[i] = info[i].burstTime;
     // Process until all processes gets
     // completed
-    while (completeP != info.size()) {
+    while (completeP < info.size()) {
 
         // Find process with minimum
         // remaining time among the

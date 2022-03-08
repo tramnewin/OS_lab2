@@ -51,6 +51,9 @@ vector<processInfo> setInput(string filename){
     return info;
 }
 
+
+//service time is the amount of time after which a process can start execution.
+//it's the summation of burst time of previous processes.
 void FCFS(vector<processInfo> info){
     int serviceTime[info.size()];
     serviceTime[0] = info[0].arrivalTime;

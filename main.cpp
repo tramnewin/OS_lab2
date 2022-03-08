@@ -124,13 +124,13 @@ void FCFS(vector<processInfo> info){
 }
 
 void SRTF(vector<processInfo> info){
-    int returnTime[info.size()];
-    int completeP = 0, t =0, minm = INT_MAX;
+    int reBurstTime[info.size()];
+    int completeP = 0, t =0, minmReTime = INT_MAX;
     int shortestP = 0, finishTime;
     bool flag = false;
     int waitTime[info.size()], turnaroundTime[info.size()], finishtime[info.size()];
     for (int i = 0; i < info.size(); i++)
-        returnTime[i] = info[i].burstTime;
+        reBurstTime[i] = info[i].burstTime;
     // Process until all processes gets
     // completed
     while (completeP < info.size()) {
@@ -141,8 +141,8 @@ void SRTF(vector<processInfo> info){
         // current time`
         for (int j = 0; j < info.size(); j++) {
             if ((info[j].arrivalTime <= t) &&
-                (returnTime[j] < minm) && returnTime[j] > 0) {
-                minm = returnTime[j];
+                (reBurstTime[j] < minmReTime) && reBurstTime[j] > 0) {
+                minmReTime = reBurstTime[j];
                 shortestP = j;
                 flag = true;
             }
@@ -154,16 +154,16 @@ void SRTF(vector<processInfo> info){
         }
 
         // Reduce remaining time by one
-        returnTime[shortestP]--;
+        reBurstTime[shortestP]--;
 
         // Update minimum
-        minm = returnTime[shortestP];
-        if (minm == 0)
-            minm = INT_MAX;
+        minmReTime = reBurstTime[shortestP];
+        if (minmReTime == 0)
+            minmReTime = INT_MAX;
 
         // If a process gets completely
         // executed
-        if (returnTime[shortestP] == 0) {
+        if (reBurstTime[shortestP] == 0) {
 
             // Increment complete
             completeP++;

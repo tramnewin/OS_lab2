@@ -123,6 +123,67 @@ void FCFS(vector<processInfo> info){
 }
 
 void SRTF(vector<processInfo> info){
+    int returnTime[info.size()];
+    int completeP = 0, t =0, minm = INT_MAX;
+    int shortestP = 0, finishTime;
+    bool flag = false;
+    int waitTime[info.size()], turnaroundTime[info.size()], finishtime[info.size()];
+    // Process until all processes gets
+    // completed
+    while (completeP != info.size()) {
+
+        // Find process with minimum
+        // remaining time among the
+        // processes that arrives till the
+        // current time`
+        for (int j = 0; j < info.size(); j++) {
+            if ((info[j].arrivalTime <= t) &&
+                (returnTime[j] < minm) && returnTime[j] > 0) {
+                minm = returnTime[j];
+                shortestP = j;
+                flag = true;
+            }
+        }
+
+        if (flag == false) {
+            t++;
+            continue;
+        }
+
+        // Reduce remaining time by one
+        returnTime[shortestP]--;
+
+        // Update minimum
+        minm = returnTime[shortestP];
+        if (minm == 0)
+            minm = INT_MAX;
+
+        // If a process gets completely
+        // executed
+        if (returnTime[shortestP] == 0) {
+
+            // Increment complete
+            completeP++;
+            flag = false;
+
+            // Find finish time of current
+            // process
+            finishTime = t + 1;
+
+            // Calculate waiting time
+            waitTime[shortestP] = finishTime -
+                           info[shortestP].burstTime -
+                           info[shortestP].arrivalTime;
+
+            if (waitTime[shortestP] < 0)
+                waitTime[shortestP] = 0;
+        }
+        // Increment time
+        t++;
+    }
+    for (int i = 0; i < info.size(); i++)
+        turnaroundTime[i] = info[i].burstTime + waitTime[i];
+
 
 }
 

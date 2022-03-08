@@ -11,6 +11,37 @@ struct processInfo {
 
 
 };
+
+void findAVG(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[]){
+    int totalTime = 0;
+    float avgTime;
+    for (int i =0; i< info.size();i++)
+        totalTime = totalTime + info[i].burstTime;
+
+    avgTime = (float)totalTime /(float)info.size();
+    cout<< "Average CPU burst time = "<< avgTime<< " ms\n";
+
+    totalTime = 0;
+    avgTime = 0;
+    for (int i =0; i< info.size();i++)
+        totalTime = totalTime + waitTime[i];
+    avgTime = (float)totalTime /(float)info.size();
+    cout<< "Average waiting time = "<< avgTime<< " ms\n";
+
+    totalTime = 0;
+    avgTime = 0;
+    for (int i =0; i< info.size();i++)
+        totalTime = totalTime + turnaroundTime[i];
+    avgTime = (float)totalTime /(float)info.size();
+    cout<< "Average turnaround time = "<< avgTime<< " ms\n";
+
+    totalTime = 0;
+    avgTime = 0;
+    for (int i =0; i< info.size();i++)
+        totalTime = totalTime + contextSwitch[i];
+    cout<< "Total No. of context switching performed = "<< totalTime<< endl;
+}
+
 vector<processInfo> setInput(string filename){
     ifstream inputfile;
     stringstream ss;
@@ -53,13 +84,50 @@ vector<processInfo> setInput(string filename){
 
 
 //service time is the amount of time after which a process can start execution.
-//it's the summation of burst time of previous processes.
+//it keeps track of the time stamp
 void FCFS(vector<processInfo> info){
     int serviceTime[info.size()];
+    int waitTime[info.size()], turnaroundTime[info.size()], finishTime[info.size()];
+    int  contextSwitch[info.size()];
+    for(int i = 0; i<info.size();i++)
+        contextSwitch[i] = 0;
     serviceTime[0] = info[0].arrivalTime;
-    cout<<endl;
+    waitTime[0] = 0;
+
+    // calculating waiting time
+    for (int i = 1; i < info.size() ; i++)
+    {
+        // Add burst time of previous processes
+        serviceTime[i] = serviceTime[i-1] + info[i-1].burstTime;
+        //each service time is the finish time of the previous process
+        finishTime[i-1] = serviceTime[i];
+
+        // Find waiting time for current process =
+        // sum - at[i]
+        waitTime[i] = serviceTime[i] - info[i].arrivalTime;
+
+        // If waiting time for a process is in negative
+        // that means it is already in the ready queue
+        // before CPU becomes idle so its waiting time is 0
+        if (waitTime[i] < 0)
+            waitTime[i] = 0;
+    }
+    //calculate the last process's finish time
+    finishTime[info.size()-1] = serviceTime[info.size()-1] + info[info.size()-1].burstTime;
+
+    //calculate turnaround time = burst time + wait time
+    for (int i = 0; i < info.size() ; i++)
+        turnaroundTime[i] = info[i].burstTime + waitTime[i];
+
+    findAVG(info, waitTime, turnaroundTime, contextSwitch);
+}
+
+void SRTF(vector<processInfo> info){
 
 }
+
+
+
 int main() {
 
     string filename;
@@ -78,6 +146,7 @@ int main() {
     if(algo == "FCFS"){
         FCFS(result);
     } else if(algo == "SRTF"){
+        SRTF(result);
 
     }else if(algo == "RR"){
 

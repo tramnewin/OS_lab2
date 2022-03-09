@@ -128,9 +128,11 @@ void SRTF(vector<processInfo> info){
     int completeP = 0, t =0, minmReTime = INT_MAX;
     int shortestP = 0, finishTime;
     bool flag = false;
+    bool queueP[info.size()];
     int waitTime[info.size()], turnaroundTime[info.size()], finishtimeArr[info.size()];
     int contextSwitch[info.size()];
-
+    for (int i = 0; i< info.size();i++)
+        queueP[i]= false;
     for(int i = 0; i<info.size();i++)
         contextSwitch[i] = 0;
     for (int i = 0; i < info.size(); i++)
@@ -141,14 +143,20 @@ void SRTF(vector<processInfo> info){
         // Find process with the smallest remaining time among the
         // processes that arrives up to the current time
         for (int j = 0; j < info.size(); j++) {
-            int temp = shortestP;
+            //int temp = shortestP;
             //if the arrival time of the process is before the current time and
             // has remaining burst time less than the smallest remaining time (but making sure it is positive time)
             if ((info[j].arrivalTime <= t) && (reBurstTime[j] < minmReTime) && reBurstTime[j] > 0) {
+                int temp = shortestP;
                 minmReTime = reBurstTime[j];    //update the smallest remaining time to the new process
                 shortestP = j;                  //change the process with the smallest burst time
+               // if (shortestP )
                 flag = true;                    //set the flag to true
-                contextSwitch[temp]++;
+                if(queueP[temp] == false && temp < shortestP && completeP < info.size()-1){
+                    contextSwitch[temp] = contextSwitch[temp] + 1;
+                    queueP[temp] = true;
+                }
+
                 //i think the increment of context switching would be here cuz we are updating the new process
                 //and preempt the current process??
 
@@ -163,7 +171,8 @@ void SRTF(vector<processInfo> info){
 
         // Reduce remaining time by one
         reBurstTime[shortestP]--;
-
+        if (queueP[shortestP] == true)
+            queueP[shortestP] = false;
         // Update minimum
         minmReTime = reBurstTime[shortestP];
         if (minmReTime == 0)    //if the smallest remaining time is 0, the process has finished executed

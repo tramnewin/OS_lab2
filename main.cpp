@@ -12,12 +12,20 @@ struct processInfo {
 
 };
 
-void findAVG(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[]){
+void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[]){
     int totalTime = 0;
     float avgTime;
     for (int i =0; i< info.size();i++)
         totalTime = totalTime + info[i].burstTime;
-
+//i need to do the gantt chart before this table
+        //the table:
+    cout<< "PID\tarrival\tCPU-burst\twaiting time\tturnaround\tNo. of context\n";
+    for (int i = 0; i < info.size(); i++){
+        cout << info[i].pid <<"\t";
+        cout << info[i].arrivalTime <<"\t";
+        cout << info[i].burstTime << "\t";
+        cout<< finishTime[i]<<"\t"<<waitTime[i]<<"\t"<<turnaroundTime[i]<<"\t"<<contextSwitch[i]<<endl;
+    }
     avgTime = (float)totalTime /(float)info.size();
     cout<< "Average CPU burst time = "<< avgTime<< " ms\n";
 
@@ -54,7 +62,7 @@ vector<processInfo> setInput(string filename){
     inputfile.open(filename);
     if (!inputfile.is_open()) {
         cout << "Unable to read file";
-        exit;
+        //exit;
     }
     ss << inputfile.rdbuf();
     while (getline(ss, anotherstring)) {        //1 0 10 -> anotherString
@@ -120,7 +128,7 @@ void FCFS(vector<processInfo> info){
     for (int i = 0; i < info.size() ; i++)
         turnaroundTime[i] = info[i].burstTime + waitTime[i];
 
-    findAVG(info, waitTime, turnaroundTime, contextSwitch);
+    final(info, waitTime, turnaroundTime, contextSwitch,finishTime);
 }
 
 void SRTF(vector<processInfo> info){
@@ -152,7 +160,7 @@ void SRTF(vector<processInfo> info){
                 shortestP = j;                  //change the process with the smallest burst time
                // if (shortestP )
                 flag = true;                    //set the flag to true
-                if(queueP[temp] == false && temp < shortestP && completeP < info.size()-1){
+                if(queueP[temp] == false && temp < shortestP && completeP < info.size()-1 && flag == true){
                     contextSwitch[temp] = contextSwitch[temp] + 1;
                     queueP[temp] = true;
                 }
@@ -202,36 +210,51 @@ void SRTF(vector<processInfo> info){
     for (int i = 0; i < info.size(); i++)
         turnaroundTime[i] = info[i].burstTime + waitTime[i];
 
-    findAVG(info, waitTime, turnaroundTime, contextSwitch);
+    final(info, waitTime, turnaroundTime, contextSwitch,finishtimeArr);
 
 }
 
+void RR(vector<processInfo> info, int quantum){
 
+    
+}
 
 int main() {
 
-    string filename;
-    string algo;
+    //string filename;
+    string input;
+    int quantum = 0;
+    string anotherstring;
+    string substring;
+    stringstream ss;
     vector<processInfo> result;
-    cout<<"Enter file name: ";
-    cin>> filename;
-    result = setInput(filename);
-    for (int i = 0; i < result.size(); i++){
-        cout << result[i].pid <<"\t";
-        cout << result[i].arrivalTime <<"\t";
-        cout << result[i].burstTime << endl;
+    getline(cin, input);
+    ss<< input;
+
+    while(getline(ss, anotherstring,' ')){
+        if (anotherstring == "input_file.txt"){
+            result = setInput(anotherstring);
+        } else{
+            if(anotherstring == "FCFS"){
+                FCFS(result);
+            } else if(anotherstring == "SRTF"){
+                SRTF(result);
+
+            }else if(anotherstring == "RR"){
+                getline(ss, substring, ' ');
+                stringstream convertStoI(substring);      //convert string to int store it into val
+                convertStoI>> quantum;
+                RR(result, quantum);
+            }
+        }
     }
-    cout<< "Enter scheduling algorithm";
-    cin>> algo;
-    if(algo == "FCFS"){
-        FCFS(result);
-    } else if(algo == "SRTF"){
-        SRTF(result);
-
-    }else if(algo == "RR"){
 
 
-    }
+
+    //cout<< "Enter scheduling algorithm";
+
+
+
 
     return 0;
 }

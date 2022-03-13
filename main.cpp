@@ -19,12 +19,17 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
         totalTime = totalTime + info[i].burstTime;
 //i need to do the gantt chart before this table
         //the table:
-    cout<< "PID\tarrival\tCPU-burst\twaiting time\tturnaround\tNo. of context\n";
+    for(int i = 0; i< finishTime[info.size()-1]; i++){
+        cout<< "* ";
+    }
+    cout<< endl;
+    cout<<"(each starts represent one ms)"<<endl;
+    cout<< "PID\tarrival\tCPU-burst\tfinish\twaiting time\tturnaround\tNo. of context\n";
     for (int i = 0; i < info.size(); i++){
-        cout << info[i].pid <<"\t";
-        cout << info[i].arrivalTime <<"\t";
-        cout << info[i].burstTime << "\t";
-        cout<< finishTime[i]<<"\t"<<waitTime[i]<<"\t"<<turnaroundTime[i]<<"\t"<<contextSwitch[i]<<endl;
+        cout << info[i].pid <<"\t\t";
+        cout << info[i].arrivalTime <<"\t\t";
+        cout << info[i].burstTime << "\t\t";
+        cout<< finishTime[i]<<"\t\t\t"<<waitTime[i]<<"\t\t\t"<<turnaroundTime[i]<<"\t\t\t"<<contextSwitch[i]<<endl;
     }
     avgTime = (float)totalTime /(float)info.size();
     cout<< "Average CPU burst time = "<< avgTime<< " ms\n";
@@ -62,7 +67,6 @@ vector<processInfo> setInput(string filename){
     inputfile.open(filename);
     if (!inputfile.is_open()) {
         cout << "Unable to read file";
-        //exit;
     }
     ss << inputfile.rdbuf();
     while (getline(ss, anotherstring)) {        //1 0 10 -> anotherString
@@ -220,7 +224,6 @@ void RR(vector<processInfo> info, int quantum){
 }
 
 int main() {
-
     //string filename;
     string input;
     int quantum = 0;

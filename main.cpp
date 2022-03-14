@@ -99,6 +99,7 @@ vector<processInfo> setInput(string filename){
 //service time is the amount of time after which a process can start execution.
 //it keeps track of the time stamp
 void FCFS(vector<processInfo> info){
+    vector<int> processes;
     int serviceTime[info.size()];
     int waitTime[info.size()], turnaroundTime[info.size()], finishTime[info.size()];
     int  contextSwitch[info.size()];

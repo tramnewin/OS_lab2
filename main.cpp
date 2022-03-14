@@ -15,11 +15,59 @@ struct processInfo {
 void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[]){
     int totalTime = 0;
     float avgTime;
+    //int indexP[4];
+    int j;
+    vector<processInfo> arrangedP;
+    processInfo temp;
+    int compareT = finishTime[0];
     for (int i =0; i< info.size();i++)
         totalTime = totalTime + info[i].burstTime;
 //i need to do the gantt chart before this table
-        //the table:
-    for(int i = 0; i< finishTime[info.size()-1]; i++){
+        //the table
+    for(int i = 0; i<info.size();i++){
+        temp.pid = i;
+        temp.arrivalTime = info[i].arrivalTime + waitTime[i];
+        temp.burstTime = 0;
+        arrangedP.push_back(temp);
+    }
+    for (int i = 1; i < arrangedP.size(); i++)
+    {
+        temp = arrangedP[i];
+        j = i - 1;
+
+        /* Move elements of arr[0..i-1], that are
+        greater than key, to one position ahead
+        of their current position */
+        while (j >= 0 && arrangedP[j].arrivalTime > temp.arrivalTime)
+        {
+            arrangedP[j+1].arrivalTime =arrangedP[j].arrivalTime;
+            arrangedP[j+1].pid = arrangedP[j].pid;
+            arrangedP[j+1].burstTime = arrangedP[j].burstTime;
+            //arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arrangedP[j + 1] = temp;
+    }
+    cout<<"P"<< arrangedP[0].pid+1;
+    for (int i = 0; i<arrangedP[1].arrivalTime;i++)
+        cout<<" ";
+    for (j = 1; j< arrangedP.size()-1;j++){
+        cout<< " P"<< arrangedP[j].pid + 1;
+        for (int i = arrangedP[j].arrivalTime; i < arrangedP[j+1]. arrivalTime && j>=0; i++ ){
+            cout<<" ";
+        }
+
+    }
+    cout<< " P"<<arrangedP[sizeof(arrangedP)-2].pid;
+    cout<< endl;
+    // Loop to store largest number to compareT
+    for(int i = 1;i < sizeof(finishTime); i++) {
+
+        if(compareT < finishTime[i])
+            compareT = finishTime[i];
+    }
+
+    for(int i = 0; i< compareT; i++){
         cout<< "* ";
     }
     cout<< endl;

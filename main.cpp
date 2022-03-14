@@ -49,16 +49,16 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
         arrangedP[j + 1] = temp;
     }
     cout<<"P"<< arrangedP[0].pid+1;
-    for (int i = 0; i<arrangedP[1].arrivalTime;i++)
+    for (int i = arrangedP[0].arrivalTime; i<=arrangedP[1].arrivalTime;i++)
         cout<<" ";
-    for (j = 1; j< arrangedP.size()-1;j++){
+    for (j = 1; j<arrangedP.size()-1;j++){
         cout<< " P"<< arrangedP[j].pid + 1;
-        for (int i = arrangedP[j].arrivalTime; i < arrangedP[j+1]. arrivalTime && j>=0; i++ ){
+        for (int i = arrangedP[j].arrivalTime; i <= arrangedP[j+1]. arrivalTime  && j>=0; i++ ){
             cout<<" ";
         }
 
     }
-    cout<< " P"<<arrangedP[sizeof(arrangedP)-2].pid;
+    cout<< " P"<<arrangedP[arrangedP.size()-1].pid+1;
     cout<< endl;
     // Loop to store largest number to compareT
     for(int i = 1;i < sizeof(finishTime); i++) {

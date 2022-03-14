@@ -48,17 +48,19 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
         }
         arrangedP[j + 1] = temp;
     }
-    cout<<"P"<< arrangedP[0].pid+1;
-    for (int i = arrangedP[0].arrivalTime; i<=arrangedP[1].arrivalTime;i++)
+    cout<<arrangedP[0].pid+1;
+    //cout<< "|";
+    for (int i = arrangedP[0].arrivalTime; i<arrangedP[1].arrivalTime-1;i++)
         cout<<" ";
     for (j = 1; j<arrangedP.size()-1;j++){
-        cout<< " P"<< arrangedP[j].pid + 1;
-        for (int i = arrangedP[j].arrivalTime; i <= arrangedP[j+1]. arrivalTime  && j>=0; i++ ){
+        cout << arrangedP[j].pid + 1;
+        //cout<<"|";
+        for (int i = arrangedP[j].arrivalTime; i < arrangedP[j+1].arrivalTime -1 && j>=0; i++ ){
             cout<<" ";
         }
 
     }
-    cout<< " P"<<arrangedP[arrangedP.size()-1].pid+1;
+    cout<<arrangedP[arrangedP.size()-1].pid+1;
     cout<< endl;
     // Loop to store largest number to compareT
     for(int i = 1;i < sizeof(finishTime); i++) {
@@ -68,10 +70,11 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
     }
 
     for(int i = 0; i< compareT; i++){
-        cout<< "* ";
+        cout<< "*";
     }
     cout<< endl;
-    cout<<"(each starts represent one ms)"<<endl;
+    cout<< "(each number represents the process id(pid))"<< endl;
+    cout<<"(each star represents one ms)"<<endl;
     cout<< "PID\tarrival\tCPU-burst\tfinish\twaiting time\tturnaround\tNo. of context\n";
     for (int i = 0; i < info.size(); i++){
         cout << info[i].pid <<"\t\t";

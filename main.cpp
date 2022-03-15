@@ -15,6 +15,8 @@ struct processInfo {
 void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[], vector<int> timelineP){
     int totalTime = 0;
     float avgTime;
+    vector<char> printTimelineP;
+    //int indexP[4];
     int j;
     vector<processInfo> arrangedP;
     processInfo temp;
@@ -22,12 +24,51 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
     for (int i =0; i< info.size();i++)
         totalTime = totalTime + info[i].burstTime;
 //i need to do the gantt chart before this table
-    //the table
+//the table
+    if (timelineP.size() == 0){
+        for(int i = 0; i<info.size();i++){
+            temp.pid = i;
+            temp.arrivalTime = info[i].arrivalTime + waitTime[i];
+            temp.burstTime = 0;
+            arrangedP.push_back(temp);
+        }
+        for (int i = 1; i < arrangedP.size(); i++)
+        {
+            temp = arrangedP[i];
+            j = i - 1;
 
-    for(int i =0; i < timelineP.size(); i++){
-        cout<< timelineP[i]+1;
+            /* Move elements of arr[0..i-1], that are
+            greater than key, to one position ahead
+            of their current position */
+            while (j >= 0 && arrangedP[j].arrivalTime > temp.arrivalTime)
+            {
+                arrangedP[j+1].arrivalTime =arrangedP[j].arrivalTime;
+                arrangedP[j+1].pid = arrangedP[j].pid;
+                arrangedP[j+1].burstTime = arrangedP[j].burstTime;
+                //arr[j + 1] = arr[j];
+                j = j - 1;
+            }
+            arrangedP[j + 1] = temp;
+        }
+        cout<<arrangedP[0].pid+1;
+        //cout<< "|";
+        for (int i = arrangedP[0].arrivalTime; i<arrangedP[1].arrivalTime-1;i++)
+            cout<<" ";
+        for (j = 1; j<arrangedP.size()-1;j++){
+            cout << arrangedP[j].pid + 1;
+            //cout<<"|";
+            for (int i = arrangedP[j].arrivalTime; i < arrangedP[j+1].arrivalTime -1 && j>=0; i++ ){
+                cout<<" ";
+            }
+
+        }
+        cout<<arrangedP[arrangedP.size()-1].pid+1;
+    }else{      //arrange it for SRTF via timelineP
+        cout<< "do sth here"<<endl;
+
 
     }
+
     cout<< endl;
     // Loop to store largest number to compareT
     for(int i = 1;i < sizeof(finishTime); i++) {
@@ -170,8 +211,6 @@ void SRTF(vector<processInfo> info){
     int contextSwitch[info.size()];
     //for (int i = 0; i< info.size();i++)
     //queueP[i]= false;
-    cout<<"************ Scheduling algorithm : SRTF *******************\n";
-    cout<<"************************************************************\n";
     for(int i = 0; i<info.size();i++)
         contextSwitch[i] = 0;
     for (int i = 0; i < info.size(); i++)

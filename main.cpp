@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <string>
 using namespace std;
 
 struct processInfo {
@@ -15,7 +16,7 @@ struct processInfo {
 void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[], vector<int> timelineP){
     int totalTime = 0;
     float avgTime;
-    vector<char> printTimelineP;
+    vector<string> printTimelineP;
     //int indexP[4];
     int j;
     vector<processInfo> arrangedP;
@@ -64,11 +65,31 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
         }
         cout<<arrangedP[arrangedP.size()-1].pid+1;
     }else{      //arrange it for SRTF via timelineP
-        cout<< "do sth here"<<endl;
+        //cout<< "do sth here"<<endl;
+        //copy int vector to char vector thats gonna print out
+        for (int i =0; i< timelineP.size();i++){
+            string a = to_string(timelineP[i]+1);
+            printTimelineP.push_back(a);
+        }
+        j = 0;
+        while(j < printTimelineP.size()){
+            if (printTimelineP[j] != " "){
+                for (int i = j+1; i < printTimelineP.size();i++){
+                    if(printTimelineP[i] == printTimelineP[j]){
+                        printTimelineP[i] = " ";
+                    }else{
+                        break;
+                    }
 
+                }
+            }
+            j++;
+        }
+    for (int i =0; i< printTimelineP.size();i++)
+        cout<<printTimelineP[i];
 
     }
-
+    j =0;
     cout<< endl;
     // Loop to store largest number to compareT
     for(int i = 1;i < sizeof(finishTime); i++) {

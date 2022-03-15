@@ -12,10 +12,9 @@ struct processInfo {
 
 };
 
-void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[]){
+void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int contextSwitch[], int finishTime[], vector<int> timelineP){
     int totalTime = 0;
     float avgTime;
-    //int indexP[4];
     int j;
     vector<processInfo> arrangedP;
     processInfo temp;
@@ -23,44 +22,12 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
     for (int i =0; i< info.size();i++)
         totalTime = totalTime + info[i].burstTime;
 //i need to do the gantt chart before this table
-        //the table
-    for(int i = 0; i<info.size();i++){
-        temp.pid = i;
-        temp.arrivalTime = info[i].arrivalTime + waitTime[i];
-        temp.burstTime = 0;
-        arrangedP.push_back(temp);
-    }
-    for (int i = 1; i < arrangedP.size(); i++)
-    {
-        temp = arrangedP[i];
-        j = i - 1;
+    //the table
 
-        /* Move elements of arr[0..i-1], that are
-        greater than key, to one position ahead
-        of their current position */
-        while (j >= 0 && arrangedP[j].arrivalTime > temp.arrivalTime)
-        {
-            arrangedP[j+1].arrivalTime =arrangedP[j].arrivalTime;
-            arrangedP[j+1].pid = arrangedP[j].pid;
-            arrangedP[j+1].burstTime = arrangedP[j].burstTime;
-            //arr[j + 1] = arr[j];
-            j = j - 1;
-        }
-        arrangedP[j + 1] = temp;
-    }
-    cout<<arrangedP[0].pid+1;
-    //cout<< "|";
-    for (int i = arrangedP[0].arrivalTime; i<arrangedP[1].arrivalTime-1;i++)
-        cout<<" ";
-    for (j = 1; j<arrangedP.size()-1;j++){
-        cout << arrangedP[j].pid + 1;
-        //cout<<"|";
-        for (int i = arrangedP[j].arrivalTime; i < arrangedP[j+1].arrivalTime -1 && j>=0; i++ ){
-            cout<<" ";
-        }
+    for(int i =0; i < timelineP.size(); i++){
+        cout<< timelineP[i]+1;
 
     }
-    cout<<arrangedP[arrangedP.size()-1].pid+1;
     cout<< endl;
     // Loop to store largest number to compareT
     for(int i = 1;i < sizeof(finishTime); i++) {
@@ -150,7 +117,8 @@ vector<processInfo> setInput(string filename){
 //service time is the amount of time after which a process can start execution.
 //it keeps track of the time stamp
 void FCFS(vector<processInfo> info){
-    vector<int> processes;
+    //vector<int> processes;
+    vector<int> timelineP;
     int serviceTime[info.size()];
     int waitTime[info.size()], turnaroundTime[info.size()], finishTime[info.size()];
     int  contextSwitch[info.size()];
@@ -158,10 +126,12 @@ void FCFS(vector<processInfo> info){
         contextSwitch[i] = 0;
     serviceTime[0] = info[0].arrivalTime;
     waitTime[0] = 0;
-
+    cout<<"************ Scheduling algorithm : FCFS *******************\n";
+    cout<<"************************************************************\n";
     // calculating waiting time
     for (int i = 1; i < info.size() ; i++)
     {
+
         // Add burst time of previous processes
         serviceTime[i] = serviceTime[i-1] + info[i-1].burstTime;
         //each service time is the finish time of the previous process
@@ -177,6 +147,7 @@ void FCFS(vector<processInfo> info){
         if (waitTime[i] < 0)
             waitTime[i] = 0;
     }
+
     //calculate the last process's finish time
     finishTime[info.size()-1] = serviceTime[info.size()-1] + info[info.size()-1].burstTime;
 
@@ -184,19 +155,23 @@ void FCFS(vector<processInfo> info){
     for (int i = 0; i < info.size() ; i++)
         turnaroundTime[i] = info[i].burstTime + waitTime[i];
 
-    final(info, waitTime, turnaroundTime, contextSwitch,finishTime);
+    final(info, waitTime, turnaroundTime, contextSwitch,finishTime,timelineP);
 }
 
 void SRTF(vector<processInfo> info){
+    vector<int> timelineP;
     int reBurstTime[info.size()];
     int completeP = 0, t =0, minmReTime = INT_MAX;
     int shortestP = 0, finishTime;
     bool flag = false;
-    bool queueP[info.size()];
+    int currentP =0;
+    //bool queueP[info.size()];
     int waitTime[info.size()], turnaroundTime[info.size()], finishtimeArr[info.size()];
     int contextSwitch[info.size()];
-    for (int i = 0; i< info.size();i++)
-        queueP[i]= false;
+    //for (int i = 0; i< info.size();i++)
+    //queueP[i]= false;
+    cout<<"************ Scheduling algorithm : SRTF *******************\n";
+    cout<<"************************************************************\n";
     for(int i = 0; i<info.size();i++)
         contextSwitch[i] = 0;
     for (int i = 0; i < info.size(); i++)
@@ -206,26 +181,27 @@ void SRTF(vector<processInfo> info){
     while (completeP < info.size()) {
         // Find process with the smallest remaining time among the
         // processes that arrives up to the current time
+        currentP = shortestP;
         for (int j = 0; j < info.size(); j++) {
             //int temp = shortestP;
+            //cout<< j<<" ";
             //if the arrival time of the process is before the current time and
             // has remaining burst time less than the smallest remaining time (but making sure it is positive time)
             if ((info[j].arrivalTime <= t) && (reBurstTime[j] < minmReTime) && reBurstTime[j] > 0) {
+                //cout<<"time: "<<t<<"current P: "<<currentP+1<< " "<<info[j].pid<<" & "<< shortestP + 1<<endl;
                 int temp = shortestP;
                 minmReTime = reBurstTime[j];    //update the smallest remaining time to the new process
                 shortestP = j;                  //change the process with the smallest burst time
-               // if (shortestP )
+                // if (shortestP )
                 flag = true;                    //set the flag to true
-                if(queueP[temp] == false && temp < shortestP && completeP < info.size()-1 && flag == true){
-                    contextSwitch[temp] = contextSwitch[temp] + 1;
-                    queueP[temp] = true;
-                }
+
 
                 //i think the increment of context switching would be here cuz we are updating the new process
                 //and preempt the current process??
 
             }
         }
+
         //if we cannot find any other process that has the smallest remaining burst time at the current time,
         //we increment the time
         if (flag == false) {
@@ -235,13 +211,22 @@ void SRTF(vector<processInfo> info){
 
         // Reduce remaining time by one
         reBurstTime[shortestP]--;
-        if (queueP[shortestP] == true)
-            queueP[shortestP] = false;
+        timelineP.push_back(currentP);
+
+
+        //if (queueP[shortestP] == true)
+        //  queueP[shortestP] = false;
         // Update minimum
         minmReTime = reBurstTime[shortestP];
         if (minmReTime == 0)    //if the smallest remaining time is 0, the process has finished executed
             minmReTime = INT_MAX;   //change the smallest remaining time so that it can get the next process
-                                    //with the smallest burst time
+        //with the smallest burst time
+        //cout<<"time: "<<t<<"current P: "<<currentP+1<< " & last timelineP is"<< timelineP[timelineP.size()-1]+1<<"remaining burst time of "
+        //  <<timelineP[timelineP.size()-2]+1<<"is "<<reBurstTime[timelineP[timelineP.size()-2]]<<"reburt of current P: "<<
+        // reBurstTime[currentP]<<endl;
+        if(t>0 && timelineP[timelineP.size()-2] != currentP && reBurstTime[timelineP[timelineP.size()-2]]> reBurstTime[currentP]){
+            contextSwitch[timelineP[timelineP.size()-2]]++;
+        }
 
         // If a process gets completely executed
         if (reBurstTime[shortestP] == 0) {
@@ -266,13 +251,13 @@ void SRTF(vector<processInfo> info){
     for (int i = 0; i < info.size(); i++)
         turnaroundTime[i] = info[i].burstTime + waitTime[i];
 
-    final(info, waitTime, turnaroundTime, contextSwitch,finishtimeArr);
+    final(info, waitTime, turnaroundTime, contextSwitch,finishtimeArr, timelineP);
 
 }
 
 void RR(vector<processInfo> info, int quantum){
 
-    
+
 }
 
 int main() {
@@ -285,7 +270,7 @@ int main() {
     vector<processInfo> result;
     getline(cin, input);
     ss<< input;
-
+    cout<<"************************************************************\n";
     while(getline(ss, anotherstring,' ')){
         if (anotherstring == "input_file.txt"){
             result = setInput(anotherstring);
@@ -303,12 +288,6 @@ int main() {
             }
         }
     }
-
-
-
-    //cout<< "Enter scheduling algorithm";
-
-
 
 
     return 0;

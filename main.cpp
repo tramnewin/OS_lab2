@@ -85,14 +85,14 @@ void final(vector<processInfo> info, int waitTime[], int turnaroundTime[], int c
             }
             j++;
         }
-    for (int i =0; i< printTimelineP.size();i++)
-        cout<<printTimelineP[i];
+        for (int i =0; i< printTimelineP.size();i++)
+            cout<<printTimelineP[i];
 
     }
     j =0;
     cout<< endl;
     // Loop to store largest number to compareT
-    for(int i = 1;i < sizeof(finishTime); i++) {
+    for(int i = 1;i < info.size(); i++) {
 
         if(compareT < finishTime[i])
             compareT = finishTime[i];
@@ -232,6 +232,8 @@ void SRTF(vector<processInfo> info){
     int contextSwitch[info.size()];
     //for (int i = 0; i< info.size();i++)
     //queueP[i]= false;
+    cout<<"************ Scheduling algorithm : SRTF *******************\n";
+    cout<<"************************************************************\n";
     for(int i = 0; i<info.size();i++)
         contextSwitch[i] = 0;
     for (int i = 0; i < info.size(); i++)
@@ -315,7 +317,156 @@ void SRTF(vector<processInfo> info){
 
 }
 
+/* 1. Declare arrival[], burst[], wait[], turn[] arrays and initialize them. Also declare a timer
+   variable and initialize it to zero. To sustain the original burst array create another
+   array (temp_burst[]) and copy all the values of burst array in it.
+
+2. To keep a check we create another array of bool type which keeps the record of whether a
+   process is completed or not. we also need to maintain a queue array which contains the process
+   indices (initially the array is filled with 0).
+
+3. Now we increment the timer variable until the first process arrives and when it does, we add the
+   process index to the queue array
+
+4. Now we execute the first process until the time quanta and during that time quanta, we check
+   whether any other process has arrived or not and if it has then we add the index in the queue
+   (by calling the fxn. queueUpdate()).
+
+5. Now, after doing the above steps if a process has finished, we store its exit time and
+   execute the next process in the queue array. Else, we move the currently executed process at
+   the end of the queue (by calling another fxn. queueAdj()) when the time slice expires.
+
+6. The above steps are then repeated until all the processes have been completely executed. If a
+   scenario arises where there are some processes left but they have not arrived yet, then we
+   shall wait and the CPU will remain idle during this interval.*/
+
+//the new arrival process is added to the queue
+void queueUpdate(int queue[], int infosize, int maxProccessIndex){
+    int zeroIndex;
+    for(int i = 0; i < infosize; i++){
+        if(queue[i] == 0){
+            zeroIndex = i;
+            break;
+        }
+    }
+    queue[zeroIndex] = maxProccessIndex + 1;
+}
+
+//swap the processes in the queue, the process that has been in the CPU,
+//at the front of the queue, is being moved to the end of the queue (happens after each quantum time)
+void queueAdj(int queue[], int infosize){
+
+    for(int i = 0; (i < infosize - 1) && (queue[i + 1] != 0) ; i++){
+        int temp = queue[i];
+        queue[i] = queue[i+1];
+        queue[i+1] = temp;
+    }
+}
+
+//check whether there's any process arrives
+void newProcessArrival(int t, vector<processInfo> info, int maxProccessIndex, int queue[]){
+    if(t <= info[info.size() - 1].arrivalTime){     //if the time is less than the last process's arrival time
+        bool ArrivalP = false;                    //initialize arrivalP as false
+        for(int j = (maxProccessIndex+1); j < info.size(); j++){
+            if(info[j].arrivalTime <= t){
+                if(maxProccessIndex < j){
+                    maxProccessIndex = j;
+                    ArrivalP = true;
+                }
+            }
+        }
+        //adds the incoming process to the ready queue
+        //(if any arrives)
+        if(ArrivalP)
+            queueUpdate(queue, info.size(), maxProccessIndex);
+    }
+}
+
+
 void RR(vector<processInfo> info, int quantum){
+
+    int  t = 0, maxProccessIndex = 0;
+    //float avgWait = 0, avgTT = 0;
+    int  contextswitch[info.size()], finishTime[info.size()];
+    vector<int> timelineP;
+    int waitTime[info.size()], turnaroundTime[info.size()], queue[info.size()], processBurst[info.size()];
+    bool completeP[info.size()];
+    for (int i =0; i< info.size();i++){
+        contextswitch[i]=0;
+        finishTime[i]=0;
+        completeP[i] = false;
+        queue[i] = 0;
+        processBurst[i] = info[i].burstTime;
+    }
+
+    cout<<"************ Scheduling algorithm : RR *******************\n";
+    cout<<"************************************************************\n";
+    while(t < info[0].arrivalTime) //Incrementing Timer until the first process arrives
+        t++;
+    queue[0] = 1;
+
+    while(true){
+        bool flag = true;       //keep track of the processes needed to run
+        for(int i = 0; i < info.size(); i++){   //go through all the processes from the input_file.txt
+            if(processBurst[i] != 0){           //if the process has not been processed (the burst time is not 0)
+                flag = false;                   //mark the flag as false and continue the algorithm
+                break;
+            }
+        }
+        if(flag)                                //if the flag is true, all processes has been done
+            break;                              //break out of the while loop
+
+        for(int i = 0; (i < info.size()) && (queue[i] != 0); i++){  //go through each process that is on the queue
+            int quantumCounter = 0;                    //keeps track of the time that is within the quantum time
+            //if the counter is less than the quantum time and has remaining burst time needed to process
+            //(the process is being chosen from the front of the queue)
+            while((quantumCounter < quantum) && (processBurst[queue[0] - 1] > 0)){
+                processBurst[queue[0]-1] -= 1;      //decrement the process's burst time
+                t += 1;                             //increment the counter and the time
+                quantumCounter++;
+                //Checking and Updating the ready queue if there's a process arrives during
+                // the CPU time of a process
+                newProcessArrival(t, info, maxProccessIndex, queue);
+            }
+            //If a process is completed then store its exit time
+            //and mark it as completed
+            if((processBurst[queue[0]-1] == 0) && !completeP[queue[0] - 1]){
+                finishTime[queue[0] - 1] = t;
+                turnaroundTime[queue[0]-1] = t;
+                completeP[queue[0] - 1] = true;
+            }
+
+            //checks whether or not CPU is idle
+            bool idle = true;
+            if(queue[info.size() - 1] == 0){
+                //
+                for(int i = 0; i < info.size() && queue[i] != 0; i++){
+                    if(!completeP[queue[i] - 1]){
+                        idle = false;
+                    }
+                }
+            }
+            else
+                idle = false;
+
+            if(idle){   //if the CPU runs no processes, increment the time and check for the next arrival process
+                t++;
+                newProcessArrival(t, info, maxProccessIndex, queue);
+            }
+
+            //Maintaining the entries of processes
+            //after each quantum time segment
+            queueAdj(queue, info.size());
+        }
+    }
+    //calculate the turnaround time and wait time
+    for(int i = 0; i < info.size(); i++){
+        turnaroundTime[i] = turnaroundTime[i] - info[i].arrivalTime;
+        waitTime[i] = turnaroundTime[i] - info[i].burstTime;
+    }
+    final(info,waitTime,turnaroundTime,contextswitch,finishTime,timelineP);
+
+
 
 
 }

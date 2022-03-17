@@ -391,12 +391,12 @@ void RR(vector<processInfo> info, int quantum){
     vector<int> timelineP;
     int waitTime[info.size()], turnaroundTime[info.size()], queue[info.size()], processBurst[info.size()];
     bool completeP[info.size()];
-    for (int i =0; i< info.size();i++){
+    for (int i =0; i< info.size();i++){     //initializes the arrays
         contextswitch[i]=0;
         finishTime[i]=0;
         completeP[i] = false;
         queue[i] = 0;
-        processBurst[i] = info[i].burstTime;
+        processBurst[i] = info[i].burstTime;    //processBurst has the copy of the burst time of each process
     }
 
     cout<<"************ Scheduling algorithm : RR *******************\n";
@@ -418,19 +418,26 @@ void RR(vector<processInfo> info, int quantum){
 
         for(int i = 0; (i < info.size()) && (queue[i] != 0); i++){  //go through each process that is on the queue
             int quantumCounter = 0;                    //keeps track of the time that is within the quantum time
+
             //if the counter is less than the quantum time and has remaining burst time needed to process
             //(the process is being chosen from the front of the queue)
             while((quantumCounter < quantum) && (processBurst[queue[0] - 1] > 0)){
                 processBurst[queue[0]-1] -= 1;      //decrement the process's burst time
                 t += 1;                             //increment the counter and the time
+                timelineP.push_back(queue[0]-1);
+
                 quantumCounter++;
                 //Checking and Updating the ready queue if there's a process arrives during
                 // the CPU time of a process
                 newProcessArrival(t, info, maxProccessIndex, queue);
             }
+            //cout<< t<<"\t"<<queue[0]<<"\t"<<processBurst[queue[0]-1] <<"\t"<<queue[1]<<"\t"<<processBurst[queue[1]-1] <<endl;
+            if(t>quantum && processBurst[queue[info.size()-1]-1]>0&&queue[0]!= queue[info.size()-1]){
+                contextswitch[queue[info.size()-1]-1]++;
+            }
             //If a process is completed then store its exit time
             //and mark it as completed
-            if((processBurst[queue[0]-1] == 0) && !completeP[queue[0] - 1]){
+            if((processBurst[queue[0]-1] == 0) && completeP[queue[0] - 1] == false){
                 finishTime[queue[0] - 1] = t;
                 turnaroundTime[queue[0]-1] = t;
                 completeP[queue[0] - 1] = true;
@@ -441,7 +448,7 @@ void RR(vector<processInfo> info, int quantum){
             if(queue[info.size() - 1] == 0){
                 //
                 for(int i = 0; i < info.size() && queue[i] != 0; i++){
-                    if(!completeP[queue[i] - 1]){
+                    if(completeP[queue[i] - 1]== false){
                         idle = false;
                     }
                 }
@@ -457,6 +464,7 @@ void RR(vector<processInfo> info, int quantum){
             //Maintaining the entries of processes
             //after each quantum time segment
             queueAdj(queue, info.size());
+
         }
     }
     //calculate the turnaround time and wait time
@@ -464,6 +472,7 @@ void RR(vector<processInfo> info, int quantum){
         turnaroundTime[i] = turnaroundTime[i] - info[i].arrivalTime;
         waitTime[i] = turnaroundTime[i] - info[i].burstTime;
     }
+    cout<< endl;
     final(info,waitTime,turnaroundTime,contextswitch,finishTime,timelineP);
 
 
@@ -499,7 +508,6 @@ int main() {
             }
         }
     }
-
 
 
     return 0;

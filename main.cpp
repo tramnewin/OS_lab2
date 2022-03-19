@@ -15,6 +15,7 @@ struct processInfo {
     int finishTime;
     int turnaroundTime;
     int waitTime;
+    int responseTime;
     bool isComplete;
     bool inQueue;
 };
@@ -25,9 +26,13 @@ void final(vector<processInfo> info,  int contextSwitch[], vector<int> timelineP
     float avgTime;
     vector<string> printTimelineP;  //holds the timeline of the process (RR, SRTF scheduler) in each unit time
     int j;
+    vector<bool> calculated;
     vector<processInfo> arrangedP;  //arrangeP has the timeline for FCFS scheduler
     processInfo temp;
     int compareT = info[0].finishTime;  //compareT has the time stamp when all process have been executed
+    for (int i =0; i< info.size();i++){
+        calculated.push_back(false);
+    }
     for (int i =0; i< info.size();i++)
         totalTime = totalTime + info[i].burstTime;  //calculate the total time of processes' burst time
     if (timelineP.size() == 0){     //if the scheduler is FCFS, the timeline for processes will be made in the code block below
@@ -67,6 +72,22 @@ void final(vector<processInfo> info,  int contextSwitch[], vector<int> timelineP
         }
         cout<<arrangedP[arrangedP.size()-1].pid+1;
     }else{      //if the scheduling algorithm is SRTF or RR
+        //finding response time
+        j =0;
+        info[0].responseTime = 0;
+        calculated[0] = true;
+        while(j <timelineP.size()){
+            for(int i = j+1; i < timelineP.size();i++){
+                if (timelineP[i] != timelineP[j]&& calculated[timelineP[i]] == false){
+                    info[timelineP[i]].responseTime = j -info[timelineP[i]].arrivalTime;
+                    calculated[timelineP[i]] = true;
+                    break;
+                }else{
+                    break;
+                }
+            }
+            j++;
+        }
         //convert int vector to char vector for printing out
         for (int i =0; i< timelineP.size();i++){
             string a = to_string(timelineP[i]+1);
@@ -75,18 +96,18 @@ void final(vector<processInfo> info,  int contextSwitch[], vector<int> timelineP
         j = 0;
         //since timelineP maps the process on every time unit and we can only print out the process when it
         //gets to the cpu in the first ms, replace the remaining duplicates in that time block with " "
-        while(j < printTimelineP.size()){
-            if (printTimelineP[j] != " "){
-                for (int i = j+1; i < printTimelineP.size();i++){
-                    if(printTimelineP[i] == printTimelineP[j]){
-                        printTimelineP[i] = " ";
-                    }else{
+        while(j < printTimelineP.size()){   //iterate through the printTimelineP array
+            if (printTimelineP[j] != " "){  //if the element's value is a number
+                for (int i = j+1; i < printTimelineP.size();i++){   //iterates through the array from the element next to it
+                    if(printTimelineP[i] == printTimelineP[j]){     //if the element next to it is the same value,
+                        printTimelineP[i] = " ";                    //replaces it with " "
+                    }else{                                          //if the element is " ", go to the next element
                         break;
                     }
 
                 }
             }
-            j++;
+            j++;    //examine the next element
         }
         for (int i =0; i< printTimelineP.size();i++)    //prints out the process id onto the Gantt chart
             cout<<printTimelineP[i];
@@ -135,6 +156,13 @@ void final(vector<processInfo> info,  int contextSwitch[], vector<int> timelineP
     totalTime = 0;
     avgTime = 0;
     for (int i =0; i< info.size();i++)
+        totalTime = totalTime + info[i].responseTime;
+    avgTime = (float)totalTime /(float)info.size();     //prints out the calculated response time
+    cout<< "Average response time = "<< avgTime<< " ms\n";
+    //reset the variables to 0 for the next calculation
+    totalTime = 0;
+    avgTime = 0;
+    for (int i =0; i< info.size();i++)
         totalTime = totalTime + contextSwitch[i];   //prints out the total amount of context switch
     cout<< "Total No. of context switching performed = "<< totalTime<< endl;
 }
@@ -174,6 +202,7 @@ vector<processInfo> setInput(string filename){  //reads the file and stores the 
         tempo.burstTimecopy = tempo.burstTime;  //copy burst time into burst time copy to use iin SRTF and RR
         tempo.finishTime = 0;                   //sets the output requirement to 0/false
         tempo.turnaroundTime = 0;
+        tempo.responseTime = 0;
         tempo.isComplete = false;
         tempo.inQueue = false;
         info.push_back(tempo);                  //push tempo to info vector
@@ -195,6 +224,7 @@ void FCFS(vector<processInfo> info){
         contextSwitch[i] = 0;
     timer[0] = info[0].arrivalTime;   //set the service time the first arrival process
     info[0].waitTime = 0;
+    info[0].responseTime = 0;
     cout<<"************ Scheduling algorithm : FCFS *******************\n";
     cout<<"************************************************************\n";
     // calculating waiting time, finish time
@@ -205,6 +235,7 @@ void FCFS(vector<processInfo> info){
         timer[i] = timer[i - 1] + info[i - 1].burstTime;
         //each timer is the finish time of the previous process
         info[i-1].finishTime = timer[i];
+
         // Find waiting time for current process
         info[i].waitTime = timer[i] - info[i].arrivalTime;
         // If waiting time for a process is in negative
@@ -216,7 +247,10 @@ void FCFS(vector<processInfo> info){
 
     //calculate the last process's finish time
     info[info.size()-1].finishTime = timer[info.size() - 1] + info[info.size() - 1].burstTime;
-
+    //calculate the response time of process i = previous process's finishtime - the current porcess's arrival time
+    for (int i = 1; i < info.size();i++){
+        info[i].responseTime = info[i-1].finishTime - info[i].arrivalTime;
+    }
     //calculate turnaround time = burst time + wait time
     for (int i = 0; i < info.size() ; i++)
         info[i].turnaroundTime = info[i].burstTime + info[i].waitTime;
@@ -277,7 +311,7 @@ void SRTF(vector<processInfo> info){
         minmReTime = info[shortestP].burstTimecopy;
         if (minmReTime == 0)    //if the smallest remaining time is 0, the process has finished executed
             minmReTime = INT_MAX;   //change the smallest remaining time so that it can get the next process
-                                    //with the smallest burst time
+        //with the smallest burst time
         //if the current process in cpu is different than the one being process on the previous time
         //and it still has burst time, context switch occurs
         if(t>0 && timelineP[timelineP.size()-2] != currentP && info[timelineP[timelineP.size()-2]].burstTimecopy > info[currentP].burstTimecopy){
